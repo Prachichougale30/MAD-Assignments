@@ -1,0 +1,19 @@
+package com.example.clock;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.widget.Toast;
+
+public class AlarmReceiver extends BroadcastReceiver {
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Toast.makeText(context, "ALARM RINGING!", Toast.LENGTH_LONG).show();
+
+        // Start the AlarmActivity to play sound and show UI
+        Intent i = new Intent(context, AlarmActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        context.startActivity(i);
+    }
+}

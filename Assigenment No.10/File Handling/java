@@ -1,0 +1,128 @@
+package com.example.filehandling;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+
+public class MainActivity extends AppCompatActivity {
+
+    private EditText etName, etEmail, etPhone;
+    private Button btnSave, btnLoad;
+    private TextView tvDisplayData, tvDisplayTitle;
+    private View divider;
+
+    private final String fileName = "userdata.txt";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Initializing views
+        etName = findViewById(R.id.etName);
+        etEmail = findViewById(R.id.etEmail);
+        etPhone = findViewById(R.id.etPhone);
+        btnSave = findViewById(R.id.btnSave);
+        btnLoad = findViewById(R.id.btnLoad);
+        tvDisplayData = findViewById(R.id.tvDisplayData);
+        tvDisplayTitle = findViewById(R.id.tvDisplayTitle);
+        divider = findViewById(R.id.divider);
+
+        // SAVE DATA
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveData();
+            }
+        });
+
+        // LOAD DATA
+        btnLoad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                loadData();
+            }
+        });
+    }
+
+    private void saveData() {
+        String name = etName.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+
+        if (name.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+            Toast.makeText(this, R.string.form_incomplete, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String data = name + "\n" + email + "\n" + phone;
+
+        try (FileOutputStream fos = openFileOutput(fileName, MODE_PRIVATE)) {
+            fos.write(data.getBytes());
+            Toast.makeText(this, R.string.data_saved, Toast.LENGTH_SHORT).show();
+            clearFields();
+            hideDisplay(); // Hide previous load data if any
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, R.string.error_saving, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadData() {
+        try (FileInputStream fis = openFileInput(fileName);
+             InputStreamReader isr = new InputStreamReader(fis);
+             BufferedReader br = new BufferedReader(isr)) {
+
+            String name = br.readLine();
+            String email = br.readLine();
+            String phone = br.readLine();
+
+            if (name != null) {
+                String formattedData = "Name: " + name + "\nEmail: " + email + "\nPhone: " + phone;
+                tvDisplayData.setText(formattedData);
+                showDisplay();
+                Toast.makeText(this, R.string.data_loaded, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, R.string.no_data, Toast.LENGTH_SHORT).show();
+                hideDisplay();
+            }
+
+        } catch (FileNotFoundException e) {
+            Toast.makeText(this, R.string.file_not_found, Toast.LENGTH_SHORT).show();
+            hideDisplay();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, R.string.error_loading, Toast.LENGTH_SHORT).show();
+            hideDisplay();
+        }
+    }
+
+    private void showDisplay() {
+        divider.setVisibility(View.VISIBLE);
+        tvDisplayTitle.setVisibility(View.VISIBLE);
+        tvDisplayData.setVisibility(View.VISIBLE);
+    }
+
+    private void hideDisplay() {
+        divider.setVisibility(View.GONE);
+        tvDisplayTitle.setVisibility(View.GONE);
+        tvDisplayData.setVisibility(View.GONE);
+    }
+
+    private void clearFields() {
+        etName.setText("");
+        etEmail.setText("");
+        etPhone.setText("");
+    }
+}
